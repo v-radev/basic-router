@@ -1,0 +1,4 @@
+RewriteEngine on
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^route/([a-z]+)/?(/[1-9][0-9]*)?$ router.php?resource=$1
