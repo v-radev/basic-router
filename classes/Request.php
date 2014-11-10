@@ -9,9 +9,25 @@ class Request {
 
     protected $_error = FALSE;
 
+    /**
+     * @var string URL path of request
+     */
     protected $_requestPath;
+    /**
+     * @var string Method of HTTP request
+     */
     protected $_requestMethod;
+    /**
+     * @var string Class name
+     */
+    protected $_requestClass;
+    /**
+     * @var string If any id is added to the request
+     */
     protected $_requestId = '';
+    /**
+     * @var string Name of function in the requested class
+     */
     protected $_requestFunction = '';
 
     protected $_availableMethods = ['get', 'post', 'put', 'delete'];
@@ -21,7 +37,7 @@ class Request {
     protected $_deleteMethods = ['delete'];
 
     /**
-     * @param $requestPath
+     * @param string $requestPath
      */
     public function __construct( $requestPath )
     {
@@ -38,6 +54,7 @@ class Request {
      */
     protected function getMethod()
     {
+        if ( $this->_error ) return;
 
         if ( strtolower( $_SERVER['REQUEST_METHOD'] ) == 'get' ) {
             $this->_requestMethod = 'get';
@@ -54,47 +71,62 @@ class Request {
 
     }//END getMethod()
 
+    /**
+     * Try to get the called method and the class name
+     */
     protected function getResource()
     {
+        if ( $this->_error ) return;
 
-        //TODO not sure about the /route part
-        //TODO use preg_match or something preg
-        //TODO check if you have X class else 404
-        //If you have only route/resource
-        if ( regex('/route\/[a-z]+/i') ) {
+        $p = $this->_requestPath;
+
+        if ( preg_match('/^[a-z]+$/i', $p) ) {// /book
             $functions = ['index', 'store'];
             goto getClassMethod;
         }
-        elseif ( regex('/route\/[a-z]+\/create/i') ) {
+        elseif ( preg_match('/^[a-z]+\/create$/i', $p) ) {// /book/create
             $functions = ['create'];
             goto getClassMethod;
         }
-        elseif ( regex('/route\/[a-z]+\/([1-9][0-9]*)/i') ){
+        elseif ( preg_match('/^[a-z]+\/([1-9][0-9]*)$/i', $p, $matches) ){// /book/{id}
+            if ( !is_numeric($matches[1]) )
+                goto setError;
+
+            $this->_requestId = $matches[1];
             $functions = ['show', 'update', 'delete'];
-            $this->_requestId = $capturedValue1;
             goto getClassMethod;
         }
-        elseif ( regex('/route\/[a-z]+\/([1-9][0-9]*)\/edit/i') ){
+        elseif ( preg_match('/^[a-z]+\/([1-9][0-9]*)\/edit$/i', $p, $matches) ){// /book/{id}/edit
+            if ( !is_numeric($matches[1]) )
+                goto setError;
+
             $functions = ['edit'];
-            $this->_requestId = $capturedValue1;
+            $this->_requestId = $matches[1];
             goto getClassMethod;
         }
 
+        setError:
         $this->_error = TRUE;
         $this->errorCode = 404;
         return;
 
         getClassMethod:
+        preg_match('/^([a-z]+)/i', $p, $className);
+        $this->_requestClass = array_pop($className);
         $methodsArray = '_' . $this->_requestMethod . 'Methods';
-        $call = array_intersect($this->$methodsArray, $functions);//TODO validate
+        $call = array_intersect($this->$methodsArray, $functions);
 
-        //TODO maybe check count to be 1?
-        //TODO array shift to make it string not array
-        //Then assign to protected var and this method is done
-    }
+        if ( count($call) != 1 )
+            goto setError;
+
+        $this->_requestFunction = array_pop($call);
+
+    }//END getResource()
 
     protected function validateClass()
     {
+        if ( $this->_error ) return;
+
         //TODO here I should check if method exists in the class
     }
 

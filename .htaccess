@@ -1,4 +1,42 @@
 RewriteEngine on
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^route/([a-z]+)/?(/[1-9][0-9]*)?$ router.php?resource=$1
+RewriteRule ^route/([a-z]+/?([1-9][0-9]*)?/?(edit|create)?/?)$ router.php?resource=$1
+ErrorDocument 404 "404 Not Found (from .htaccess)"
+
+#Regex goes like this:
+#Start with route/
+#Followed by capturing group:
+#A word, optionally followed by a slash
+#Optionally followed by a number from 1-9 followed by zero or more of 0-9
+#Optional slash
+#Optional edit|create with optional slash
+
+#Matches:
+#route/book/23/
+#route/book/21/edit/
+#route/book/23
+#route/book/21/edit
+#route/book/10
+#route/book/106
+#route/book/10/
+#route/book/106/
+#route/book/10000/
+#route/book/100006/
+#route/book/3321/
+#route/book/335551/
+#route/book
+#route/book/
+#route/books/create/
+#route/books/create
+
+#No matches
+#route/book/06/
+#route/book/00
+#route/book/0
+#route/book/08
+#route//book
+
+#Flaws:
+#route/books221/
+#route/books//

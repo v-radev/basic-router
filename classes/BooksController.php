@@ -3,13 +3,13 @@
 class BooksController extends BaseController {
 
 	/*
-		GET  	/books 			 - show all view       - index()
-		GET  	/books/create 	 - show create view    - create()
-		POST 	/books 			 - create new book     - store()
-		GET  	/books/{id}		 - show book id view   - show($id)
-		GET  	/books/{id}/edit - show update view    - edit($id)
-		PUT  	/books/{id} 	 - update book id view - update($id)
-		DELETE  /books/{id}  	 - delete book id view - delete($id)
+		GET  	/book 			 - show all view       - index()
+		GET  	/book/create 	 - show create view    - create()
+		POST 	/book 			 - create new book     - store()
+		GET  	/book/{id}		 - show book id view   - show($id)
+		GET  	/book/{id}/edit  - show update view    - edit($id)
+		PUT  	/book/{id} 	     - update book id view - update($id)
+		DELETE  /book/{id}  	 - delete book id view - delete($id)
 	 */
 
 	public static function index(){}
