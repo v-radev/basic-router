@@ -3,9 +3,8 @@
 
 class Request {
 
-    //TODO I will response to the error from the router.php depending on the $_errorCode
-
     public $errorCode = 0;
+    public $classNameSuffix = 'sController';
 
     protected $_error = FALSE;
 
@@ -35,6 +34,10 @@ class Request {
     protected $_postMethods = ['store'];
     protected $_putMethods = ['update'];
     protected $_deleteMethods = ['delete'];
+
+    protected $_classNameFinal = '';
+    protected $_classFileFinal = '';
+    protected $_classPathFinal = '';
 
     /**
      * @param string $requestPath
@@ -123,12 +126,35 @@ class Request {
 
     }//END getResource()
 
+    /**
+     * Validate the class and the function
+     */
     protected function validateClass()
     {
         if ( $this->_error ) return;
 
-        //TODO here I should check if method exists in the class
-    }
+        $this->_classNameFinal = ucfirst($this->_requestClass) . $this->classNameSuffix;
+        $this->_classFileFinal = $this->_classNameFinal .'.php';
+        $this->_classPathFinal = realpath( dirname(__FILE__) ) . DIRECTORY_SEPARATOR . $this->_classFileFinal;
+
+        //No file
+        if ( !file_exists($this->_classPathFinal) || !is_readable($this->_classPathFinal) )
+            goto set404;
+
+        require_once $this->_classFileFinal;
+
+        $obj = new $this->_classNameFinal;
+
+        //Method exists return and don't set error
+        if ( method_exists($obj, $this->_requestFunction) )
+            return;
+
+        set404:
+        $this->_error = TRUE;
+        $this->errorCode = 404;
+        return;
+
+    }//END validateClass()
 
     /**
      * @return bool
@@ -146,11 +172,22 @@ class Request {
         return $this->_error;
     }
 
+    /**
+     * Make the call to the class method and return result
+     * @return mixed
+     * @throws HttpRequestException
+     */
     public function serve()
     {
         if ( $this->_error )
             throw new HttpRequestException('Request error occurred. Execution can not continue. Please handle error before serve()');
 
-        //TODO make the call to the class method()
+        require_once $this->_classFileFinal;
+
+        $obj = new $this->_classNameFinal;
+        $function = $this->_requestFunction;
+
+        //Call class method
+        return $obj->$function($this->_requestId);
     }
 }
