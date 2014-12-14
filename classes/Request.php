@@ -68,6 +68,11 @@ class Request {
             $this->_requestMethod = $_POST['_method'];
             return;
         }
+        
+        if ( in_array(strtolower( $_SERVER['REQUEST_METHOD'] ), $this->_availableMethods) ){
+            $this->_requestMethod = strtolower( $_SERVER['REQUEST_METHOD'] );
+            return;
+        }
 
         $this->_error = TRUE;
         $this->errorCode = 405;
