@@ -1,6 +1,9 @@
 <?php
 
-
+/**
+ * Class GroupsController
+ * @author V.Radev <mail@radev.info>
+ */
 class Request {
 
     public $errorCode = 0;
